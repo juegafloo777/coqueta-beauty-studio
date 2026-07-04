@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Coqueta Beauty">
+<link rel="apple-touch-icon" href="https://pikaso.cdnpk.net/private/production/4786977334/render.png?token=exp=1783555200~hmac=28d40cd2e6ff63e0a7a88b5e92aea61028c4fce4c129f68ca607b0a249677cf6">
+<link rel="icon" href="https://pikaso.cdnpk.net/private/production/4786977334/render.png?token=exp=1783555200~hmac=28d40cd2e6ff63e0a7a88b5e92aea61028c4fce4c129f68ca607b0a249677cf6">
+<title>Coqueta Beauty Studio</title>
+<style>
+  :root {
+    --pink: #f7d9e3;
+    --pink-dark: #e8a9c0;
+    --rose: #c9788f;
+    --rose-deep: #a45268;
+    --cream: #fff8f6;
+    --ink: #3a2a2f;
+    --muted: #8a6f76;
+    --gold: #d4a373;
+    --white: #ffffff;
+    --shadow: 0 4px 16px rgba(164, 82, 104, 0.15);
+    --badge-color: #f7d9e3;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    height: 100%;
+  }
+  #app { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; background: var(--cream); position: relative; }
+
+  header.top {
+    padding: 18px 16px 14px;
+    background-color: var(--badge-color);
+    background-size: cover;
+    background-position: center;
+    text-align: center;
+    position: sticky; top: 0; z-index: 20;
+    box-shadow: var(--shadow);
+  }
+  header.top h1 {
+    margin: 0; font-size: 20px; letter-spacing: 0.5px; color: var(--rose-deep);
+    font-weight: 700;
+  }
+  header.top p { margin: 2px 0 0; font-size: 12px; color: var(--rose-deep); opacity: 0.8; }
+  .logo-badge {
+    width: 260px; max-width: 80%; aspect-ratio: 1 / 1; margin: 0 auto;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-badge img {
+    width: 100%; height: 100%; object-fit: contain; display: block;
+    -webkit-clip-path: ellipse(49% 47% at 50% 50%);
+    clip-path: ellipse(49% 47% at 50% 50%);
+  }
+
+  nav.tabs {
+    display: flex; gap: 6px; padding: 10px 12px 0;
+    background: var(--cream);
+    position: sticky; top: 278px; z-index: 19;
+  }
+  nav.tabs button {
+    flex: 1; border: none; background: var(--white); color: var(--muted);
+    padding: 9px 4px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  nav.tabs button.active { background: var(--rose); color: white; }
+
+  main { flex: 1; padding: 14px 14px 90px; overflow-y: auto; }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  .search-bar {
+    display: flex; gap: 8px; margin-bottom: 10px;
+  }
+  .search-bar input {
+    flex: 1; padding: 10px 12px; border-radius: 12px; border: 1px solid #eecfd8;
+    font-size: 14px; background: var(--white);
+  }
+  .filter-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 6px; }
+  .chip {
+    flex-shrink: 0; padding: 6px 12px; border-radius: 999px; background: var(--white);
+    border: 1px solid #eecfd8; font-size: 12px; color: var(--muted); white-space: nowrap;
+  }
+  .chip.active { background: var(--gold); color: white; border-color: var(--gold); }
+
+  .grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .card {
+    background: var(--white); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow);
+    display: flex; flex-direction: column;
+  }
+  .card img { width: 100%; height: 120px; object-fit: cover; display: block; background: #f1e2e6; }
+  .card .info { padding: 8px 9px 10px; }
+  .card .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+  .tag { font-size: 10px; background: var(--pink); color: var(--rose-deep); padding: 2px 7px; border-radius: 999px; }
+  .card h3 { font-size: 12.5px; margin: 0; line-height: 1.3; }
+
+  .empty { text-align: center; color: var(--muted); font-size: 13px; margin-top: 40px; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(58,42,47,0.55);
+    display: none; align-items: flex-end; justify-content: center; z-index: 100;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--white); border-radius: 20px 20px 0 0; width: 100%; max-width: 480px;
+    max-height: 88vh; overflow-y: auto; padding: 16px; position: relative;
+  }
+  .modal img { width: 100%; border-radius: 14px; max-height: 320px; object-fit: cover; }
+  .modal h2 { margin: 12px 0 4px; font-size: 17px; }
+  .modal .desc { font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+  .close-btn {
+    position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.35); color: white;
+    border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 15px;
+  }
+  .del-btn { margin-top: 12px; background: #e57373; color: white; border: none; padding: 9px 14px; border-radius: 10px; font-size: 13px; width: 100%; }
+
+  /* Forms */
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 12.5px; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
+  .field input[type=text], .field input[type=number], .field input[type=date], .field textarea, .field select {
+    width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #eecfd8; font-size: 14px; background: var(--white);
+  }
+  .field textarea { resize: vertical; min-height: 60px; }
+  .upload-box {
+    border: 2px dashed var(--pink-dark); border-radius: 14px; padding: 18px; text-align: center;
+    color: var(--muted); font-size: 13px; background: var(--white); position: relative; margin-bottom: 12px;
+  }
+  .upload-box img.preview { max-height: 140px; border-radius: 10px; margin-top: 8px; }
+  .upload-box input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+  .btn {
+    display: block; width: 100%; padding: 12px; border: none; border-radius: 12px;
+    background: var(--rose); color: white; font-size: 14.5px; font-weight: 700; margin-top: 6px;
+  }
+  .btn.secondary { background: var(--white); color: var(--rose); border: 1px solid var(--rose); }
+  .btn.gold { background: var(--gold); }
+
+  .lock-screen { text-align: center; padding-top: 60px; }
+  .lock-screen input { width: 140px; text-align: center; letter-spacing: 6px; font-size: 20px; padding: 10px; border-radius: 10px; border: 1px solid #eecfd8; margin: 14px 0; }
+  .lock-screen .icon { font-size: 40px; }
+
+  .stat-card {
+    background: linear-gradient(135deg, var(--rose), var(--rose-deep));
+    color: white; border-radius: 16px; padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow);
+  }
+  .stat-card .amount { font-size: 30px; font-weight: 800; margin: 4px 0; }
+  .stat-card .label { font-size: 12px; opacity: 0.85; }
+  .progress-track { background: rgba(255,255,255,0.35); border-radius: 999px; height: 8px; margin-top: 10px; overflow: hidden; }
+  .progress-fill { background: white; height: 100%; border-radius: 999px; }
+  .goal-row { display: flex; justify-content: space-between; font-size: 11.5px; margin-top: 6px; opacity: 0.9; }
+
+  .payment-list { margin-top: 4px; }
+  .payment-item {
+    background: var(--white); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px;
+    display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  .payment-item .pi-left { font-size: 12.5px; }
+  .payment-item .pi-left .date { color: var(--muted); font-size: 11px; }
+  .payment-item .pi-right { text-align: right; font-size: 13px; font-weight: 700; color: var(--rose-deep); }
+  .payment-item .save-amt { font-size: 10.5px; color: var(--gold); font-weight: 600; }
+
+  .admin-bar {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px;
+    background: var(--white); box-shadow: 0 -2px 10px rgba(0,0,0,0.08); display: flex; z-index: 20;
+  }
+  .admin-bar button {
+    flex: 1; border: none; background: none; padding: 10px 0 8px; font-size: 10.5px; color: var(--muted);
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .admin-bar button .ic { font-size: 18px; }
+  .admin-bar button.active { color: var(--rose); }
+
+  .section-title { font-size: 15px; font-weight: 700; margin: 4px 0 10px; color: var(--rose-deep); }
+  .hint { font-size: 11.5px; color: var(--muted); margin-top: -6px; margin-bottom: 12px; }
+  .top-right-lock { position: absolute; top: 18px; right: 14px; background: rgba(255,255,255,0.5); border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 14px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="top" id="appHeader">
+    <div class="logo-badge">
+      <img id="headerLogoImg" src="https://pikaso.cdnpk.net/private/production/4787143552/render.png?token=exp=1783555200~hmac=a9f59dfb96420b3c662dcf5a5089058dd2f6943e9451c8de810fd52d66354d56" alt="Coqueta Beauty Studio">
+    </div>
+    <p id="subtitle">Nail art portfolio</p>
+    <button class="top-right-lock" id="lockToggleBtn" title="Artist login">🔒</button>
+  </header>
+
+  <nav class="tabs" id="tabsPublic">
+    <button data-tab="gallery" class="active">Gallery</button>
+    <button data-tab="search">Search</button>
+  </nav>
+
+  <nav class="tabs" id="tabsAdmin" style="display:none;">
+    <button data-tab="gallery" class="active">Gallery</button>
+    <button data-tab="add">+ Add</button>
+    <button data-tab="savings">Savings</button>
+  </nav>
+
+  <main>
+
+    <!-- GALLERY -->
+    <section class="screen active" id="screen-gallery">
+      <div class="search-bar">
+        <input type="text" id="galleryQuery" placeholder="Search by color, shape, style...">
+      </div>
+      <div class="filter-row" id="filterRow"></div>
+      <div class="grid" id="galleryGrid"></div>
+      <div class="empty" id="galleryEmpty" style="display:none;">No designs yet. Ask your artist to add some! ✨</div>
+    </section>
+
+    <!-- SEARCH (customer-focused, same data different framing) -->
+    <section class="screen" id="screen-search">
+      <div class="section-title">Looking for something specific?</div>
+      <div class="search-bar">
+        <input type="text" id="searchQuery" placeholder="e.g. red, almond, floral...">
+      </div>
+      <div class="grid" id="searchGrid"></div>
+      <div class="empty" id="searchEmpty" style="display:none;">Try a different color, shape, or style.</div>
+    </section>
+
+    <!-- ADD (admin only) -->
+    <section class="screen" id="screen-add">
+      <div class="section-title">Add a new design</div>
+      <div class="upload-box" id="uploadBox">
+        <div id="uploadPrompt">📸 Tap to upload a photo</div>
+        <img id="uploadPreview" class="preview" style="display:none;">
+        <input type="file" id="photoInput" accept="image/*">
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea id="descInput" placeholder="Brief description of the look..."></textarea>
+      </div>
+      <div class="field">
+        <label>Colors (comma separated)</label>
+        <input type="text" id="colorsInput" placeholder="e.g. red, gold, white">
+      </div>
+      <div class="field">
+        <label>Shape</label>
+        <select id="shapeInput">
+          <option value="">Select shape</option>
+          <option>Almond</option><option>Coffin</option><option>Square</option>
+          <option>Round</option><option>Stiletto</option><option>Oval</option><option>Squoval</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Signs / Style (comma separated)</label>
+        <input type="text" id="signsInput" placeholder="e.g. floral, chrome, french tip, ombre">
+      </div>
+      <button class="btn" id="saveDesignBtn">Save Design</button>
+    </section>
+
+    <!-- SAVINGS (admin only) -->
+    <section class="screen" id="screen-savings">
+      <div class="stat-card">
+        <div class="label">Total Saved</div>
+        <div class="amount" id="totalSavedAmt">$0</div>
+        <div class="progress-track"><div class="progress-fill" id="goalProgressFill" style="width:0%"></div></div>
+        <div class="goal-row">
+          <span id="goalProgressPct">0% of goal</span>
+          <span id="goalRemaining">Goal: $0</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Savings Goal ($)</label>
+        <input type="number" id="goalInput" placeholder="e.g. 2000">
+        <button class="btn secondary" id="setGoalBtn" style="margin-top:8px;">Update Goal</button>
+      </div>
+
+      <div class="section-title" style="margin-top:18px;">Log a payment</div>
+      <div class="field">
+        <label>Client / note (optional)</label>
+        <input type="text" id="clientInput" placeholder="e.g. Maria - full set">
+      </div>
+      <div class="field">
+        <label>Amount charged ($)</label>
+        <input type="number" id="amountInput" placeholder="0.00">
+      </div>
+      <div class="field">
+        <label>% to put toward savings</label>
+        <input type="number" id="pctInput" value="20">
+      </div>
+      <button class="btn gold" id="logPaymentBtn">Log Payment</button>
+
+      <div class="section-title" style="margin-top:20px;">History</div>
+      <div class="payment-list" id="paymentList"></div>
+
+      <div class="section-title" style="margin-top:20px;">App Settings</div>
+      <div class="field">
+        <label>New PIN (4 digits)</label>
+        <input type="text" id="newPinInput" maxlength="4" inputmode="numeric" placeholder="e.g. 5678">
+      </div>
+      <div class="field">
+        <label>Confirm New PIN</label>
+        <input type="text" id="confirmPinInput" maxlength="4" inputmode="numeric" placeholder="Re-enter PIN">
+      </div>
+      <button class="btn secondary" id="updatePinBtn">Update PIN</button>
+      <p class="hint">Forget your PIN? There's a separate recovery code that always works to get back in.</p>
+
+      <div class="section-title" style="margin-top:22px;">Logo &amp; Header Color</div>
+      <div class="upload-box" id="logoUploadBox">
+        <div id="logoUploadPrompt">📸 Tap to upload a new logo</div>
+        <img id="logoUploadPreview" class="preview" style="display:none;">
+        <input type="file" id="logoPhotoInput" accept="image/*">
+      </div>
+      <button class="btn secondary" id="saveLogoBtn">Save New Logo</button>
+
+      <div class="field" style="margin-top:14px;">
+        <label>Header background color</label>
+        <input type="color" id="logoBgColorInput" style="width:100%; height:44px; padding:4px; border-radius:10px; border:1px solid #eecfd8;">
+      </div>
+
+      <div class="field" style="margin-top:10px;">
+        <label>Or use a photo as the header background instead</label>
+      </div>
+      <div class="upload-box" id="headerBgUploadBox">
+        <div id="headerBgUploadPrompt">🖼️ Tap to upload a background photo</div>
+        <img id="headerBgPreview" class="preview" style="display:none;">
+        <input type="file" id="headerBgPhotoInput" accept="image/*">
+      </div>
+      <button class="btn secondary" id="saveHeaderBgBtn">Save Background Photo</button>
+      <button class="btn secondary" id="removeHeaderBgBtn" style="margin-top:8px;">Remove Photo (use color instead)</button>
+
+      <button class="btn secondary" id="resetLogoBtn" style="margin-top:16px;">Reset Logo, Color &amp; Photo to Default</button>
+    </section>
+
+    <!-- LOCK SCREEN -->
+    <section class="screen" id="screen-lock">
+      <div class="lock-screen">
+        <div class="icon">🔒</div>
+        <p>Enter artist PIN</p>
+        <input type="password" id="pinInput" maxlength="4" inputmode="numeric">
+        <div>
+          <button class="btn" id="pinSubmit" style="width:140px; display:inline-block;">Unlock</button>
+        </div>
+        <p class="hint">Default PIN is 1234 until changed in Savings &gt; App Settings.</p>
+        <button class="btn secondary" id="cancelLock" style="width:140px;">Cancel</button>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="admin-bar" id="adminBar" style="display:none;">
+    <button data-tab="gallery" class="active"><span class="ic">🖼️</span>Gallery</button>
+    <button data-tab="add"><span class="ic">➕</span>Add</button>
+    <button data-tab="savings"><span class="ic">💰</span>Savings</button>
+    <button id="logoutBtn"><span class="ic">🚪</span>Exit Admin</button>
+  </div>
+
+  <!-- Detail modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <button class="close-btn" id="modalClose">✕</button>
+      <img id="modalImg">
+      <h2 id="modalTitle"></h2>
+      <div class="tags" id="modalTags"></div>
+      <p class="desc" id="modalDesc"></p>
+      <button class="del-btn" id="modalDelete" style="display:none;">Delete Design</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const DEFAULT_PIN = "1234";
+const MASTER_PIN = "4321"; // recovery code - only Matthew should know this
+const PIN_KEY = "nailPortfolioPin";
+const STORAGE_KEY = "nailPortfolioDesigns";
+const SAVINGS_KEY = "nailPortfolioSavings";
+const LOGO_KEY = "nailPortfolioLogo";
+const LOGO_BG_KEY = "nailPortfolioLogoBg";
+const HEADER_BG_PHOTO_KEY = "nailPortfolioHeaderBgPhoto";
+let pendingHeaderBg = null;
+const DEFAULT_LOGO = "https://pikaso.cdnpk.net/private/production/4787143552/render.png?token=exp=1783555200~hmac=a9f59dfb96420b3c662dcf5a5089058dd2f6943e9451c8de810fd52d66354d56";
+const DEFAULT_BADGE_COLOR = "#f7d9e3";
+let pendingLogo = null;
+
+let currentPin = localStorage.getItem(PIN_KEY) || DEFAULT_PIN;
+let designs = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+let savings = JSON.parse(localStorage.getItem(SAVINGS_KEY) || '{"goal":2000,"payments":[]}');
+let isAdmin = false;
+let activeFilter = null;
+let pendingPhoto = null;
+
+function persist() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(designs));
+  localStorage.setItem(SAVINGS_KEY, JSON.stringify(savings));
+}
+
+// Seed a couple of example designs on first run so the demo isn't empty
+if (designs.length === 0) {
+  designs = [
+    {
+      id: 1,
+      img: "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><rect width='300' height='300' fill='%23f4b6c2'/><text x='50%' y='50%' font-size='26' text-anchor='middle' fill='%23a45268' font-family='sans-serif'>Red Chrome</text></svg>`.replace(/%23/g,'#')),
+      desc: "Glossy red chrome set with a gold accent nail. Elegant and bold for date night.",
+      colors: ["red","gold"], shape: "Almond", signs: ["chrome","accent nail"]
+    },
+    {
+      id: 2,
+      img: "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><rect width='300' height='300' fill='%23fbe4ec'/><text x='50%' y='50%' font-size='26' text-anchor='middle' fill='%23a45268' font-family='sans-serif'>Floral French</text></svg>`.replace(/%23/g,'#')),
+      desc: "Classic french tip base with hand painted white florals on the ring finger.",
+      colors: ["white","nude"], shape: "Coffin", signs: ["floral","french tip"]
+    }
+  ];
+  persist();
+}
+
+// ---------- Tab navigation ----------
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('#tabsPublic button, #tabsAdmin button, #adminBar button').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === name);
+  });
+  if (name === 'gallery') renderGallery();
+  if (name === 'search') renderSearch();
+  if (name === 'savings') renderSavings();
+}
+
+document.querySelectorAll('#tabsPublic button, #tabsAdmin button').forEach(b => {
+  b.addEventListener('click', () => showScreen(b.dataset.tab));
+});
+document.querySelectorAll('#adminBar button[data-tab]').forEach(b => {
+  b.addEventListener('click', () => showScreen(b.dataset.tab));
+});
+
+// ---------- Lock / admin ----------
+document.getElementById('lockToggleBtn').addEventListener('click', () => {
+  if (isAdmin) { exitAdmin(); } else { showScreen('lock'); }
+});
+document.getElementById('cancelLock').addEventListener('click', () => showScreen('gallery'));
+document.getElementById('pinSubmit').addEventListener('click', tryPin);
+document.getElementById('pinInput').addEventListener('keydown', e => { if (e.key === 'Enter') tryPin(); });
+
+function tryPin() {
+  const val = document.getElementById('pinInput').value;
+  const usedMaster = (val === MASTER_PIN && val !== currentPin);
+  if (val === currentPin || val === MASTER_PIN) {
+    isAdmin = true;
+    document.getElementById('tabsPublic').style.display = 'none';
+    document.getElementById('tabsAdmin').style.display = 'flex';
+    document.getElementById('adminBar').style.display = 'flex';
+    document.getElementById('lockToggleBtn').textContent = '🔓';
+    document.getElementById('pinInput').value = '';
+    showScreen('gallery');
+    if (usedMaster) {
+      setTimeout(() => alert('You unlocked with the recovery code. Go to Savings > App Settings to set a new personal PIN.'), 200);
+    }
+  } else {
+    alert('Incorrect PIN');
+  }
+}
+
+document.getElementById('logoutBtn').addEventListener('click', exitAdmin);
+function exitAdmin() {
+  isAdmin = false;
+  document.getElementById('tabsPublic').style.display = 'flex';
+  document.getElementById('tabsAdmin').style.display = 'none';
+  document.getElementById('adminBar').style.display = 'none';
+  document.getElementById('lockToggleBtn').textContent = '🔒';
+  showScreen('gallery');
+}
+
+// ---------- Gallery + search ----------
+function allTagsList() {
+  const set = new Set();
+  designs.forEach(d => { d.colors.forEach(c=>set.add(c)); d.signs.forEach(s=>set.add(s)); if(d.shape) set.add(d.shape); });
+  return Array.from(set);
+}
+
+function renderFilterRow() {
+  const row = document.getElementById('filterRow');
+  const tags = allTagsList();
+  row.innerHTML = tags.map(t => `<button class="chip ${activeFilter===t?'active':''}" data-tag="${t}">${t}</button>`).join('');
+  row.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => {
+      activeFilter = activeFilter === c.dataset.tag ? null : c.dataset.tag;
+      renderFilterRow();
+      renderGallery();
+    });
+  });
+}
+
+function matchesQuery(d, q) {
+  const hay = [d.desc, d.shape, ...d.colors, ...d.signs].join(' ').toLowerCase();
+  return hay.includes(q.toLowerCase());
+}
+
+function cardHtml(d) {
+  const tags = [d.shape, ...d.colors, ...d.signs].filter(Boolean).slice(0,4);
+  return `<div class="card" data-id="${d.id}">
+    <img src="${d.img}">
+    <div class="info">
+      <h3>${d.desc.slice(0,40)}${d.desc.length>40?'…':''}</h3>
+      <div class="tags">${tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+    </div>
+  </div>`;
+}
+
+function renderGallery() {
+  renderFilterRow();
+  const q = document.getElementById('galleryQuery').value.trim();
+  let list = designs;
+  if (activeFilter) list = list.filter(d => [d.shape,...d.colors,...d.signs].includes(activeFilter));
+  if (q) list = list.filter(d => matchesQuery(d, q));
+  const grid = document.getElementById('galleryGrid');
+  grid.innerHTML = list.map(cardHtml).join('');
+  document.getElementById('galleryEmpty').style.display = list.length ? 'none' : 'block';
+  grid.querySelectorAll('.card').forEach(c => c.addEventListener('click', () => openModal(Number(c.dataset.id))));
+}
+document.getElementById('galleryQuery').addEventListener('input', renderGallery);
+
+function renderSearch() {
+  const q = document.getElementById('searchQuery').value.trim();
+  const list = q ? designs.filter(d => matchesQuery(d, q)) : designs;
+  const grid = document.getElementById('searchGrid');
+  grid.innerHTML = list.map(cardHtml).join('');
+  document.getElementById('searchEmpty').style.display = list.length ? 'none' : 'block';
+  grid.querySelectorAll('.card').forEach(c => c.addEventListener('click', () => openModal(Number(c.dataset.id))));
+}
+document.getElementById('searchQuery').addEventListener('input', renderSearch);
+
+// ---------- Modal ----------
+let modalDesignId = null;
+function openModal(id) {
+  const d = designs.find(x => x.id === id);
+  if (!d) return;
+  modalDesignId = id;
+  document.getElementById('modalImg').src = d.img;
+  document.getElementById('modalTitle').textContent = d.shape ? `${d.shape} set` : 'Design';
+  document.getElementById('modalTags').innerHTML = [d.shape,...d.colors,...d.signs].filter(Boolean).map(t=>`<span class="tag">${t}</span>`).join('');
+  document.getElementById('modalDesc').textContent = d.desc;
+  document.getElementById('modalDelete').style.display = isAdmin ? 'block' : 'none';
+  document.getElementById('modalOverlay').classList.add('show');
+}
+document.getElementById('modalClose').addEventListener('click', () => document.getElementById('modalOverlay').classList.remove('show'));
+document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target.id === 'modalOverlay') e.currentTarget.classList.remove('show'); });
+document.getElementById('modalDelete').addEventListener('click', () => {
+  if (!confirm('Delete this design?')) return;
+  designs = designs.filter(d => d.id !== modalDesignId);
+  persist();
+  document.getElementById('modalOverlay').classList.remove('show');
+  renderGallery();
+});
+
+// ---------- Add design ----------
+document.getElementById('photoInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    pendingPhoto = reader.result;
+    document.getElementById('uploadPreview').src = pendingPhoto;
+    document.getElementById('uploadPreview').style.display = 'block';
+    document.getElementById('uploadPrompt').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('saveDesignBtn').addEventListener('click', () => {
+  const desc = document.getElementById('descInput').value.trim();
+  const colors = document.getElementById('colorsInput').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const shape = document.getElementById('shapeInput').value;
+  const signs = document.getElementById('signsInput').value.split(',').map(s=>s.trim()).filter(Boolean);
+  if (!pendingPhoto) { alert('Please upload a photo'); return; }
+  if (!desc) { alert('Please add a short description'); return; }
+  designs.unshift({ id: Date.now(), img: pendingPhoto, desc, colors, shape, signs });
+  persist();
+  pendingPhoto = null;
+  document.getElementById('uploadPreview').style.display = 'none';
+  document.getElementById('uploadPrompt').style.display = 'block';
+  document.getElementById('descInput').value = '';
+  document.getElementById('colorsInput').value = '';
+  document.getElementById('shapeInput').value = '';
+  document.getElementById('signsInput').value = '';
+  showScreen('gallery');
+});
+
+// ---------- Savings ----------
+function renderSavings() {
+  document.getElementById('goalInput').value = savings.goal;
+  const total = savings.payments.reduce((sum,p) => sum + p.saveAmt, 0);
+  document.getElementById('totalSavedAmt').textContent = '$' + total.toFixed(2);
+  const pct = savings.goal > 0 ? Math.min(100, (total / savings.goal) * 100) : 0;
+  document.getElementById('goalProgressFill').style.width = pct + '%';
+  document.getElementById('goalProgressPct').textContent = pct.toFixed(0) + '% of goal';
+  document.getElementById('goalRemaining').textContent = 'Goal: $' + Number(savings.goal).toFixed(2);
+
+  const list = document.getElementById('paymentList');
+  list.innerHTML = savings.payments.slice().reverse().map(p => `
+    <div class="payment-item">
+      <div class="pi-left">
+        <div>${p.client || 'Client'}</div>
+        <div class="date">${p.date}</div>
+      </div>
+      <div class="pi-right">$${p.amount.toFixed(2)}
+        <div class="save-amt">+$${p.saveAmt.toFixed(2)} saved</div>
+      </div>
+    </div>`).join('') || '<div class="empty">No payments logged yet.</div>';
+}
+
+document.getElementById('setGoalBtn').addEventListener('click', () => {
+  const val = parseFloat(document.getElementById('goalInput').value);
+  if (isNaN(val) || val <= 0) { alert('Enter a valid goal amount'); return; }
+  savings.goal = val;
+  persist();
+  renderSavings();
+});
+
+document.getElementById('logPaymentBtn').addEventListener('click', () => {
+  const amount = parseFloat(document.getElementById('amountInput').value);
+  const pct = parseFloat(document.getElementById('pctInput').value) || 0;
+  const client = document.getElementById('clientInput').value.trim();
+  if (isNaN(amount) || amount <= 0) { alert('Enter a valid amount charged'); return; }
+  const saveAmt = amount * (pct / 100);
+  savings.payments.push({ date: new Date().toISOString().slice(0,10), amount, pct, saveAmt, client });
+  persist();
+  document.getElementById('amountInput').value = '';
+  document.getElementById('clientInput').value = '';
+  renderSavings();
+});
+
+document.getElementById('updatePinBtn').addEventListener('click', () => {
+  const newPin = document.getElementById('newPinInput').value.trim();
+  const confirmPin = document.getElementById('confirmPinInput').value.trim();
+  if (!/^\d{4}$/.test(newPin)) { alert('PIN must be exactly 4 digits'); return; }
+  if (newPin !== confirmPin) { alert('PINs do not match'); return; }
+  if (newPin === MASTER_PIN) { alert('That number is reserved as the recovery code. Please choose a different PIN.'); return; }
+  currentPin = newPin;
+  localStorage.setItem(PIN_KEY, currentPin);
+  document.getElementById('newPinInput').value = '';
+  document.getElementById('confirmPinInput').value = '';
+  alert('PIN updated! Use your new PIN next time you lock the app.');
+});
+
+// ---------- Logo & header color customization ----------
+function applyLogo(url) {
+  document.getElementById('headerLogoImg').src = url;
+}
+function applyBadgeColor(color) {
+  document.documentElement.style.setProperty('--badge-color', color);
+  document.getElementById('logoBgColorInput').value = color;
+}
+
+document.getElementById('logoPhotoInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    pendingLogo = reader.result;
+    document.getElementById('logoUploadPreview').src = pendingLogo;
+    document.getElementById('logoUploadPreview').style.display = 'block';
+    document.getElementById('logoUploadPrompt').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('saveLogoBtn').addEventListener('click', () => {
+  if (!pendingLogo) { alert('Please choose an image first'); return; }
+  localStorage.setItem(LOGO_KEY, pendingLogo);
+  applyLogo(pendingLogo);
+  alert('Logo updated!');
+});
+
+document.getElementById('logoBgColorInput').addEventListener('input', e => {
+  applyBadgeColor(e.target.value);
+  localStorage.setItem(LOGO_BG_KEY, e.target.value);
+});
+
+// ---------- Header background photo ----------
+function applyHeaderBgPhoto(url) {
+  const header = document.getElementById('appHeader');
+  if (url) {
+    header.style.backgroundImage = `url(${url})`;
+  } else {
+    header.style.backgroundImage = 'none';
+  }
+}
+
+document.getElementById('headerBgPhotoInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    pendingHeaderBg = reader.result;
+    document.getElementById('headerBgPreview').src = pendingHeaderBg;
+    document.getElementById('headerBgPreview').style.display = 'block';
+    document.getElementById('headerBgUploadPrompt').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('saveHeaderBgBtn').addEventListener('click', () => {
+  if (!pendingHeaderBg) { alert('Please choose a photo first'); return; }
+  localStorage.setItem(HEADER_BG_PHOTO_KEY, pendingHeaderBg);
+  applyHeaderBgPhoto(pendingHeaderBg);
+  alert('Header background photo updated!');
+});
+
+document.getElementById('removeHeaderBgBtn').addEventListener('click', () => {
+  localStorage.removeItem(HEADER_BG_PHOTO_KEY);
+  applyHeaderBgPhoto(null);
+  pendingHeaderBg = null;
+  document.getElementById('headerBgPreview').style.display = 'none';
+  document.getElementById('headerBgUploadPrompt').style.display = 'block';
+  document.getElementById('headerBgPhotoInput').value = '';
+  alert('Photo removed. Using header color instead.');
+});
+
+document.getElementById('resetLogoBtn').addEventListener('click', () => {
+  if (!confirm('Reset logo, header color, and background photo back to the original design?')) return;
+  localStorage.removeItem(LOGO_KEY);
+  localStorage.removeItem(LOGO_BG_KEY);
+  localStorage.removeItem(HEADER_BG_PHOTO_KEY);
+  applyLogo(DEFAULT_LOGO);
+  applyBadgeColor(DEFAULT_BADGE_COLOR);
+  applyHeaderBgPhoto(null);
+  pendingLogo = null;
+  pendingHeaderBg = null;
+  document.getElementById('logoUploadPreview').style.display = 'none';
+  document.getElementById('logoUploadPrompt').style.display = 'block';
+  document.getElementById('headerBgPreview').style.display = 'none';
+  document.getElementById('headerBgUploadPrompt').style.display = 'block';
+  document.getElementById('headerBgPhotoInput').value = '';
+  alert('Reset to default logo, color, and photo.');
+});
+
+// ---------- init ----------
+applyHeaderBgPhoto(localStorage.getItem(HEADER_BG_PHOTO_KEY) || null);
+applyLogo(localStorage.getItem(LOGO_KEY) || DEFAULT_LOGO);
+applyBadgeColor(localStorage.getItem(LOGO_BG_KEY) || DEFAULT_BADGE_COLOR);
+renderGallery();
+</script>
+</body>
+</html>
